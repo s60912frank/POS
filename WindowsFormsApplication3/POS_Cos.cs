@@ -12,44 +12,50 @@ namespace WindowsFormsApplication3
 {
     public partial class POS_Cos : Form
     {
-        private List<Meal> mealList = new List<Meal>();
+        public static List<Meal> mealList = new List<Meal>();
 
+        /*public List<Meal> getmeallist()
+        {
+            return mealList;
+        }*/
+
+        //private Button[] _buttons = null;
         public POS_Cos()
         {
             InitializeComponent();
             initialize();
         }
 
-        private void prepage_Click(object sender, EventArgs e)
-        {
-            npage.Enabled = true;
-            prepage.Enabled = false;
-            pgchanger(1, true);
-            pgchanger(2, false);
-        }
-
-        private void npage_Click(object sender, EventArgs e)
-        {
-            prepage.Enabled = true;
-            npage.Enabled = false;
-            pgchanger(2, true);
-            pgchanger(1, false);
-        }
-
         private void mealbuttons_Click(object sender, EventArgs e)
         {
             Button b = sender as Button;
             Meal m = mealList.Find(x => x.b == b);
-            MessageBox.Show(m.name);
+            bool isExist = false;
+
+            foreach (DataGridViewRow row in dgv.Rows)
+            {
+                if (row.Cells[0].Value != null)
+                {
+                    if (row.Cells[0].Value.ToString() == m.name)
+                    {
+                        row.Cells[2].Value = Convert.ToInt32(row.Cells[2].Value) + 1;
+                        row.Cells[3].Value = Convert.ToInt32(row.Cells[1].Value) * Convert.ToInt32(row.Cells[2].Value);
+                        isExist = true;
+                        break;
+                    }
+                }
+            }
+            if (!isExist)
+            {
+                dgv.Rows.Add(new Object[] { m.name, m.price, 1, m.price });
+            }
+            
         }
 
-        private void pgchanger(int pgnum,bool op)
+
+        private void dvgUpdater(DataGridViewRow item)
         {
-            List<Meal> result = mealList.FindAll(delegate(Meal item){return item.pg == pgnum;});
-            foreach (Meal i in result)
-            {
-                i.b.Visible = op;
-            }
+
         }
 
         private void initialize()
@@ -74,6 +80,12 @@ namespace WindowsFormsApplication3
                 item.b.Text = item.name + "\n" + item.price + "NTD";
                 item.b.Click += mealbuttons_Click;
             }
+
+            dgv.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            dgv.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dgv.ReadOnly = true;
+            dgv.RowHeadersVisible = false;
+            dgv.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
         }
     }
 
@@ -83,5 +95,82 @@ namespace WindowsFormsApplication3
         public string name;
         public int price;
         public int pg;
+    }
+
+
+    //MVC實作開始
+    public partial class View : Form
+    {
+        /*public void dgvUpdater()
+        {
+
+        }*/
+
+       public static void pgchanger(int pgnum,bool op)
+        {
+            List<Meal> result = POS_Cos.mealList.FindAll(delegate(Meal item){return item.pg == pgnum;});
+            foreach (Meal i in result)
+            {
+                i.b.Visible = op;
+            }
+        }
+
+        /*public void TotalPrice()
+        {
+
+        }*/
+
+
+    }
+
+    public partial class Controller : Form
+    {
+        private void mealbuttons_Click(object sender, EventArgs e)
+        {
+            //List<Meal> mealList = POS_Cos.getmeallist();
+            Button b = sender as Button;
+            Meal m = POS_Cos.mealList.Find(x => x.b == b);
+            bool isExist = false;
+
+            foreach (DataGridViewRow row in dgv.Rows)
+            {
+                if (row.Cells[0].Value != null)
+                {
+                    if (row.Cells[0].Value.ToString() == m.name)
+                    {
+                        row.Cells[2].Value = Convert.ToInt32(row.Cells[2].Value) + 1;
+                        row.Cells[3].Value = Convert.ToInt32(row.Cells[1].Value) * Convert.ToInt32(row.Cells[2].Value);
+                        isExist = true;
+                        break;
+                    }
+                }
+            }
+            if (!isExist)
+            {
+                dgv.Rows.Add(new Object[] { m.name, m.price, 1, m.price });
+            }
+
+        }
+
+        private void prepage_Click(object sender, EventArgs e)
+        {
+            npage.Enabled = true;
+            prepage.Enabled = false;
+            View.pgchanger(1, true);
+            View.pgchanger(2, false);
+        }
+
+        private void npage_Click(object sender, EventArgs e)
+        {
+            prepage.Enabled = true;
+            npage.Enabled = false;
+            View.pgchanger(2, true);
+            View.pgchanger(1, false);
+        }
+    }
+
+    public class Model : POS_Cos
+    {
+
     }
 }
